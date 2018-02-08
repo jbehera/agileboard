@@ -1,0 +1,16 @@
+.Board {
+    height: 150px;
+    width: 350px;
+    margin: 20px;
+    background: rgb(3, 169, 244);
+    box-sizing: border-box;
+    box-shadow: antiquewhite;
+    border-radius: 4px;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.Board-title {
+    color: #ffffff;
+    font-size: 20px;
+}

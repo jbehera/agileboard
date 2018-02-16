@@ -1,25 +1,43 @@
-import { graphql } from 'react-apollo';
+import client from '../client';
 import gql from 'graphql-tag';
-import DataComponent from '../data';
 
 export const getBoards = () => {
+    return dispatch => {        
+        client.query({
+            query: gql `
+                query {
+                    boards {
+                        _id
+                        title
+                    }
+                }
+            `
+        }).then(response => {
+            return dispatch({
+                type: 'LOAD_BOARDS',
+                data: response.data.boards
+            })
+        });
+    }
+}
+
+export const createBoard = (title) => {
     return dispatch => {
-        debugger;
-        const response = graphql(
-            gql `
-                query GetBoards {
-                    user(_id: "5a75c98cdc5e41244c81c35d") {
-                        boards {
-                            _id
-                            title
-                        }
+        client.mutate({
+            mutation: gql `
+                mutation ($title: String!){
+                    createBoard(title: $title) {
+                        _id
+                        title
                     }
                 }
             `,
-            { name: 'getBoardData'}
-        );
-
-        console.log(response);
-        return true;
+            variables: { title }
+        }).then(response => {
+            return dispatch({
+                type: 'CREATE_BOARD',
+                payload: response.data.createBoard
+            });
+        })
     }
 }

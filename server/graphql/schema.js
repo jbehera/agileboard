@@ -17,7 +17,6 @@ export default `
         boardId: String!
         title: String!
         tasks: [Task]
-        position: Int
     }
 
     type Task {
@@ -25,7 +24,6 @@ export default `
         listId: String!        
         title: String!
         description: String!
-        position: Int
         createdAt: String
         updatedAt: String
     }
@@ -35,9 +33,9 @@ export default `
         createList(title: String!, boardId: String!): List!
         updateList(id: String!, title: String!): List
         deleteList(id: String!): List
-        orderList(id: String!, position: Int!, nextPosition: Int!, boardId: String!): Boolean
+        orderList(position: Int!, nextPosition: Int!, boardId: String!): Boolean
         createTask(title: String!, description: String!, listId: String!): Task
-        orderTasks(taskId1: String!, taskId2: String!): Boolean
+        orderTasks(position: Int!, nextPosition: Int!, listId: String!): Boolean
         updateTask(id: String!, title: String!, description: String!): Task
         deleteTask(id: String!): Task
     }

@@ -1,6 +1,6 @@
 .Board {
     height: 150px;
-    width: 350px;
+    width: 20%;
     margin: 20px;
     background: rgb(3, 169, 244);
     box-sizing: border-box;

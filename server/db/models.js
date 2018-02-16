@@ -26,22 +26,22 @@ const Schema = mongoose.Schema;
 
 const boardSchema = new Schema({
     _id: Schema.Types.ObjectId,
-    title: String
+    title: String,
+    lists: [{ type: Schema.Types.ObjectId, ref: 'List' }]
 });
 
 const listSchema = new Schema({
     _id: Schema.Types.ObjectId,
     title: String,
     boardId: { type: Schema.Types.ObjectId, ref: 'Board' },
-    position: Number
+    tasks: [{ type: Schema.Types.ObjectId, ref: 'Task' }]
 });
 
 const taskSchema = new Schema({
     _id: Schema.Types.ObjectId,
     title: String,
     description: String,
-    listId: { type: Schema.Types.ObjectId, ref: 'List'},
-    position: Number
+    listId: { type: Schema.Types.ObjectId, ref: 'List' }
 }, { timestamps: true });
 
 export const Board = mongoose.model('Board', boardSchema);

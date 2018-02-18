@@ -66,6 +66,36 @@ export const createList = (title, boardId) => {
     };
 };
 
+export const updateList = (id, title) => {
+    return dispatch => {
+        client.mutate({
+            mutation: gql `
+                mutation ($id: String!, $title: String!) {
+                    updateList(id: $id, title: $title) {
+                        _id
+                        title
+                        tasks {
+                            _id
+                            title
+                            description
+                            createdAt
+                            updatedAt
+                        }
+                    }
+                }
+            `,
+            variables: { id, title }
+        }).then(response => {
+            return dispatch({
+                type: 'UPDATE_LIST',
+                payload: response.data
+            });
+        },(err) => {
+            console.log(err);
+        });
+    }
+};
+
 export const deleteList = (id) => {
     return dispatch => {
         client.mutate({
@@ -126,6 +156,32 @@ export const createTask = (title, description, listId) => {
                 type: 'CREATE_TASK',
                 payload: { listId, newTask: response.data.createTask }
             })           
+        });
+    }
+};
+
+export const updateTask = (id, title, description, listId) => {
+    return dispatch => {
+        client.mutate({
+            mutation: gql `
+                mutation ($id: String!, $title: String!, $description: String!) {
+                    updateTask(id: $id, title: $title, description: $description) {
+                        _id
+                        title
+                        description
+                        createdAt
+                        updatedAt
+                    }
+                }
+            `,
+            variables: { id, title, description }
+        }).then(response => {
+            return dispatch({
+                type: 'UPDATE_TASK',
+                payload: { listId, task: response.data.updateTask }
+            });
+        },(err) => {
+            console.log(err);
         });
     }
 };

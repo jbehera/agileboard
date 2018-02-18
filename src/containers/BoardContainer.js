@@ -2,10 +2,12 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { 
     getBoard, 
-    createList, 
+    createList,
+    updateList, 
     deleteList,
     orderLists,
     createTask,
+    updateTask,
     deleteTask,
     orderTasks
 } from '../actions/board';
@@ -27,6 +29,10 @@ class BoardContainer extends Component {
         this.props.createList(title, this.boardId);
     }
 
+    onListUpdate = (id, title) => {
+        this.props.updateList(id, title);
+    }
+
     onListRemove = (id) => {
         this.props.deleteList(id);
     }
@@ -37,6 +43,10 @@ class BoardContainer extends Component {
 
     onTaskAdd = (title, description, listId) => {
         this.props.createTask(title, description, listId)
+    }
+
+    onTaskUpdate = (id, title, description, listId) => {
+        this.props.updateTask(id, title, description, listId);
     }
 
     onTaskRemove = (id, listId) => {
@@ -57,9 +67,11 @@ class BoardContainer extends Component {
                     key={_id}
                     data={lists}
                     onListAdd={this.onListAdd}
+                    onListUpdate={this.onListUpdate}
                     onListRemove={this.onListRemove}
                     onListMove={this.onListMove}
                     onTaskAdd={this.onTaskAdd}
+                    onTaskUpdate={this.onTaskUpdate}
                     onTaskRemove={this.onTaskRemove}
                     onTaskMove={this.onTaskMove}/>
             );     
@@ -80,6 +92,9 @@ export default connect(state => {
     createList: (title, boardId) => {
         dispatch(createList(title, boardId));
     },
+    updateList: (id, title) => {
+        dispatch(updateList(id, title));
+    },
     deleteList: (id) => {
         dispatch(deleteList(id));
     },
@@ -88,6 +103,9 @@ export default connect(state => {
     },
     createTask: (title, description, listId) => {
         dispatch(createTask(title, description, listId));
+    },
+    updateTask: (id, title, description, listId) => {
+        dispatch(updateTask(id, title, description, listId));
     },
     deleteTask: (id, listId) => {
         dispatch(deleteTask(id, listId));

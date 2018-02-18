@@ -3,7 +3,6 @@ import { orderItemsInArray } from '../helpers';
 export default (state = {
     
   }, action) => { 
-    //let board, list, updatedLists, position, nextPosition, data, listId, task;    
     switch (action.type) {
       case 'LOAD_BOARD':
         let board = action.data;
@@ -16,6 +15,21 @@ export default (state = {
           {}, state, { board : { ...state.board, lists: newLists	} } 
         );
 
+      case 'UPDATE_LIST':
+        const updatedList = action.payload.updateList;
+        const updatedLists = [...state.board.lists].reduce((acc, next) => {
+          if(next._id == updatedList._id) {
+            acc.push(updatedList);
+          } else {
+            acc.push(next);
+          }
+
+          return acc;
+        },[]);
+
+        return Object.assign(
+          {}, state, { board : { ...state.board, lists: updatedLists	} } 
+        );
       case 'DELETE_LIST': 
         const deletedList = action.payload.deleteList;
         let remainingLists = state.board.lists.filter(list => list._id != deletedList._id);
@@ -51,6 +65,29 @@ export default (state = {
         return Object.assign(
           {}, state, { board : { ...state.board, lists: updatedListsWithNewTask	} } 
         );
+
+      case 'UPDATE_TASK':
+        let updatedTask = action.payload.task;
+        listId = action.payload.listId;
+
+        let updatedListsWithUpdatedTask = [...state.board.lists].reduce((acc, next) => {
+          if(next._id == listId) {
+              let item = Object.assign({}, next);
+              item.tasks = next.tasks.reduce((a, t) => {
+                a.push(t._id == updatedTask._id ? updatedTask : t);
+                return a;
+              },[]);
+              acc.push(item);
+          } else {
+            acc.push(next);
+          }
+          return acc;
+        }, []);
+
+        return Object.assign(
+          {}, state, { board : { ...state.board, lists: updatedListsWithUpdatedTask	} } 
+        );
+
 
       case 'DELETE_TASK':
         let { deletedTask } = action.payload;

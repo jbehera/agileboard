@@ -33,7 +33,7 @@ export default class TaskLists extends Component {
     }
 
     renderTaskCards = (tasks, listId) => {
-        const { onTaskRemove, onTaskMove } = this.props;
+        const { onTaskRemove, onTaskUpdate, onTaskMove } = this.props;
         const count = tasks.length;
         return(
             <div>
@@ -48,6 +48,7 @@ export default class TaskLists extends Component {
                         position={++index}
                         createdAt={task.createdAt}
                         updatedAt={task.updatedAt}
+                        onUpdate={onTaskUpdate}
                         onRemove={onTaskRemove}
                         onMove={onTaskMove}
                         />)
@@ -57,7 +58,7 @@ export default class TaskLists extends Component {
     }
     
     render() {
-        const { data, onListRemove, onListMove, onTaskAdd } = this.props;
+        const { data, onListUpdate, onListRemove, onListMove, onTaskAdd } = this.props;
         const count = data && data.length;
         return (
             <div>
@@ -80,7 +81,8 @@ export default class TaskLists extends Component {
                             id={list._id} 
                             title={list.title}
                             count={count}
-                            position={++index}                            
+                            position={++index}
+                            onUpdate={onListUpdate}                            
                             onRemove={onListRemove}
                             onMove={onListMove}
                             onTaskAdd={onTaskAdd}>

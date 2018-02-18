@@ -108,7 +108,6 @@ export default {
             }, { lists: 1, _id: 0});
             // Update array with correct order
             let lists = boardLists[0].lists;
-            console.log(boardLists, lists);
             const item = lists.splice(--args.position, 1);
             lists.splice(--args.nextPosition, 0, ...item);
 

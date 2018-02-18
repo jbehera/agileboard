@@ -7,17 +7,35 @@ import FlatButton from 'material-ui/FlatButton';
 import Divider from 'material-ui/Divider';
 import TextField from 'material-ui/TextField';
 
-
-
 class TaskList extends PureComponent {
 
     constructor(props) {
         super(props);
         this.state = {
             newTask: false,
+            editList: false,
             title: '',
-            description: ''
+            description: '',
+            listTitle: ''
         }
+    }
+
+   
+    toggleEditList = () => {
+        this.setState((state) => ({
+            editList: !state.editList,
+            listTitle: ''
+        }));
+    }
+
+    onListTitleChange = (e) => {
+        this.setState({ listTitle: e.target.value })
+    }
+
+    onListSave = (e) => {
+        const id = e.currentTarget.dataset.id;
+        this.props.onUpdate(id, this.state.listTitle);
+        this.toggleEditList();
     }
 
     toggleNewTask = () => {
@@ -37,7 +55,6 @@ class TaskList extends PureComponent {
     }
 
     onSave = (e) => {
-        //this.props.onListAdd(this.state.title);
         const listId = e.currentTarget.dataset.id;
         this.props.onTaskAdd(this.state.title, this.state.description, listId);
         this.toggleNewTask();
@@ -57,19 +74,32 @@ class TaskList extends PureComponent {
         return(
             <div style={styles.taskList}>
                 <List>
-                    <Subheader style={styles.listHeader}>
-                        <div>{title}</div>
-                        <div style={styles.listHeader.buttons}>
-                            <FlatButton label="Add" onClick={this.toggleNewTask}/>                            
-                            <label style={styles.move}>
-                                Move: 
-                                <SelectBox 
-                                    options={[...Array(count).keys()].map(i => i + 1)} 
-                                    onChange={this.onMove} 
-                                    selectedValue={position} />
-                            </label>
-                            <FlatButton label="Remove" data-id={id} secondary={true} onClick={this.onRemove} />
-                        </div>
+                    <Subheader>
+                        { !this.state.editList && 
+                            (<div style={styles.listHeader}>
+                                <div>{title}</div>
+                                <div style={styles.listHeader.buttons}>
+                                    <FlatButton label="Add" onClick={this.toggleNewTask}/>
+                                    <FlatButton label="Edit" onClick={this.toggleEditList}/>
+                                    <label style={styles.move}>
+                                        Move: 
+                                        <SelectBox 
+                                            options={[...Array(count).keys()].map(i => i + 1)} 
+                                            onChange={this.onMove} 
+                                            selectedValue={position} />
+                                    </label>
+                                    <FlatButton label="Remove" data-id={id} secondary={true} onClick={this.onRemove} />
+                                </div>
+                            </div>)}
+                        { this.state.editList && (
+                            <div>
+                                <TextField id={`${position}${id}`} value={this.state.listTitle || title } onChange={this.onListTitleChange}/>
+                                <div>
+                                    <FlatButton label="Save" primary={true} data-id={id} onClick={this.onListSave}/>
+                                    <FlatButton label="Cancel" onClick={this.toggleEditList}/>
+                                </div>
+                            </div>
+                        )}
                     </Subheader>
                     <Divider/>
                     {this.state.newTask && (
@@ -97,6 +127,37 @@ class TaskList extends PureComponent {
 
 class TaskCard extends PureComponent {
 
+    constructor(props) {
+        super(props);
+        this.state = {
+            taskEdit: false,
+            title: ``,
+            description:``
+        };
+    }
+
+    toggleEdit = () => {
+        this.setState((state) => ({
+            taskEdit: !state.taskEdit,
+            title: ``,
+            description: ``
+        }));
+    }
+
+    onTitleChange = (e) => {
+        this.setState({ title: e.target.value });
+    }
+
+    onDescriptionChange = (e) => {
+        this.setState({ description: e.target.value });
+    }
+
+    onUpdate = (e) => {
+        const id = e.currentTarget.dataset.id; 
+        this.props.onUpdate(id, this.state.title, this.state.description, this.props.listId);
+        this.toggleEdit();
+    }
+
     onRemove = (e) => {
         this.props.onRemove(e.currentTarget.dataset.id, this.props.listId);
     }
@@ -106,14 +167,15 @@ class TaskCard extends PureComponent {
     }
     
     render() {
-        const { title, description, count, position, createdAt, updatedAt } = this.props;
+        const { id, title, description, count, position, createdAt, updatedAt } = this.props;
         return(
             <div>
-                <ListItem 
+                {!this.state.taskEdit && (<ListItem 
                     primaryText={
                         <div style={styles.listHeader}>
                             <div>{title}</div>
-                            <div style={styles.listHeader.buttons}>                                
+                            <div style={styles.listHeader.buttons}>
+                                <FlatButton label="Edit" onClick={this.toggleEdit}/>                                
                                 <label style={styles.move}>
                                     Move: 
                                     <SelectBox 
@@ -128,7 +190,17 @@ class TaskCard extends PureComponent {
                     secondaryText={
                         <p>{description} <br/> Updated: <strong>{new Date(updatedAt).toLocaleString()}</strong></p>
                     }
-                    secondaryTextLines={2} />
+                secondaryTextLines={2} />)}
+                {this.state.taskEdit && (
+                    <div style={styles.editTask}>
+                        <TextField id={`title${position}${id}`} value={this.state.title || title } onChange={this.onTitleChange}/><br/>
+                        <TextField id={`desc${position}${id}`} value={this.state.description || title } onChange={this.onDescriptionChange}/>
+                        <div>
+                            <FlatButton label="Save" primary={true} data-id={id} onClick={this.onUpdate}/>
+                            <FlatButton label="Cancel" onClick={this.toggleEdit}/>
+                        </div>
+                    </div>
+                )}
             </div>
         )
     }
@@ -163,6 +235,9 @@ const styles = {
         margin: '5px 10px'
     },
     move: {
+        margin: '10px'
+    },
+    editTask: {
         margin: '10px'
     }
 }

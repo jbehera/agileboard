@@ -1,18 +1,27 @@
-import React, { Component } from 'react';
-import './styles/Board.css';
+import React from 'react';
 
-export default class Board extends Component {
+const styles = {
+    board: {
+        height: '150px',
+        width: '20%',
+        margin: '20px',
+        background: 'rgb(3, 169, 244)',
+        boxSizing: 'border-box',
+        boxShadow: 'antiquewhite',
+        borderRadius: '4px',
+        padding: '10px',
+        cursor: 'pointer'
+    },
+    title: {
+        color: '#ffffff',
+        fontSize: '20px'
+    }
+}
 
-    handleBoardClick = () => {
-        this.props.onBoardSelect(this.props.board._id);
-    }
-    
-    render() {
-        const { board } = this.props;
-        return (
-            <div className="Board" onClick={this.handleBoardClick}>
-                <label className="Board-title">{board.title}</label>
-            </div>
-        );
-    }
+export const Board = ({board, ...props}) => {
+    return (
+        <div style={styles.board} data-id={board._id} onClick={props.onBoardClick}>
+            <label style={styles.title}>{board.title}</label>
+        </div>
+    );
 };

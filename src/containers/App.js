@@ -3,8 +3,8 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import { Switch, Route, } from 'react-router-dom';
 import './App.css';
 import Header from '../components/Header';
-import DashboardContainer from './Dashboard';
-import Lists from './Lists';
+import DashboardContainer from './DashboardContainer';
+import BoardContainer from './BoardContainer';
 
 class App extends Component {
   render() {
@@ -17,7 +17,7 @@ class App extends Component {
           <main className="App-main">
             <Switch>
               <Route exact path="/" component={DashboardContainer} />
-              <Route path="/board/:id" component={Lists} />
+              <Route path="/board/:id" component={BoardContainer} />
             </Switch>
           </main>
         </div>

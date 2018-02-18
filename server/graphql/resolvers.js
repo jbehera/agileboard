@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 const ObjectId = new mongoose.Types.ObjectId;
 import { Board, List, Task } from '../db/models';
 
@@ -19,13 +19,31 @@ export default {
     },    
     Board: {        
         lists: async(args) => {
-            const lists = await List.find({ boardId: args._id }, {}, {$order: {position: 1}});           
+            let lists = await List.find({ boardId: args._id });
+            
+            // sort the lists as in board.list ids
+            let boardLists = await Board.find({ _id: new mongoose.Types.ObjectId(args._id)}, { lists: 1, _id: 0});
+            let listIds = boardLists[0].lists;
+
+            lists = lists.sort((l1, l2) => {
+                return listIds.indexOf(l1._id) > listIds.indexOf(l2._id);
+            });
+
             return lists;
         }
     },
     List: {
         tasks: async (args) => {
-            const tasks = await Task.find({listId: args._id}, {}, {$order: {position: 1}});             
+            let tasks = await Task.find({ listId: args._id });             
+
+            // sort the tasks as in list.tasks ids
+            let listTasks = await List.find({ _id: new mongoose.Types.ObjectId(args._id) }, { tasks: 1, _id: 0});
+            let taskIds = listTasks[0].tasks;
+
+            tasks = tasks.sort((t1, t2) => {
+                return taskIds.indexOf(t1._id) > taskIds.indexOf(t2._id);
+            });
+
             return tasks;          
         }
     },
@@ -38,12 +56,18 @@ export default {
             return board;
         },
         createList: async (parent, args) => {
-            let position = await List.count({ boardId: args.boardId });
-            args.position = position + 1;            
             const list = await new List({
                 _id: new mongoose.Types.ObjectId(),
                 ...args
             }).save();
+
+            await Board.findOneAndUpdate({
+                _id: new mongoose.Types.ObjectId(args.boardId)
+            }, {
+                $push : { lists: list._id }
+            }, (err) => {
+                if(err) throw err;
+            });
             
             return list;
         },
@@ -61,91 +85,74 @@ export default {
         },
         deleteList: async(parent, args) => {
             const list = await List.findById(args.id);
+            // remove tasks
             await Task.remove({ listId: args.id });
+
+            // update lists under board - remove id of the list from board.lists array
+            await Board.update({
+                _id: new mongoose.Types.ObjectId(list.boardId)
+            }, {
+                $pullAll: { lists: [list._id] }
+            }, (err) => {
+                if(err) throw err;
+            });
+
+            // remove list
             await List.remove({ _id: new mongoose.Types.ObjectId(args.id) });
             return list;
-        },
-        // orderList: async (parent, args) => {            
-        //     const lists = await List.find({_id: { 
-        //         "$in": [args.listId1, args.listId2]
-        //     }}).select({ "_id": 1, "position": 1});
-
-        //     await List.findOneAndUpdate({
-        //         _id: new mongoose.Types.ObjectId(lists[0]._id)
-        //     }, {
-        //         "$set": { "position" : lists[1].position }
-        //     }, (err) => {
-        //         if(err) throw err;
-        //     });
-
-        //     await List.findOneAndUpdate({
-        //         _id: new mongoose.Types.ObjectId(lists[1]._id)
-        //     }, {
-        //         "$set": { "position" : lists[0].position }
-        //     }, (err) => {
-        //         if(err) throw err;
-        //     });
-
-        //     return true;
-        // },  
+        },        
         orderList: async (parent, args) => {
-            let curPos = args.position;
-            let nextPos = args.nextPosition;
+            // find array of board.lists
+            const boardLists = await Board.find({
+                _id: new mongoose.Types.ObjectId(args.boardId)
+            }, { lists: 1, _id: 0});
+            // Update array with correct order
+            let lists = boardLists[0].lists;
+            console.log(boardLists, lists);
+            const item = lists.splice(--args.position, 1);
+            lists.splice(--args.nextPosition, 0, ...item);
 
-            const lists = await List.find({
-                    boardId: new mongoose.Types.ObjectId(args.boardId)
-                }, {                    
-                }, { $order: { position: 1 }}, 
-                (err, lists) => {
-                    lists.forEach((list) => {
-                        if(list.position >= curPos && list.position <= nextPos) {
-                            list.position = (list._id == args.id) ? 
-                                                nextPos : 
-                                                list.position - 1;                    
-                            list.save();
-                        } else if(list.position <= curPos && list.position >= nextPos) {
-                            list.position = (list._id == args.id) ? 
-                                                nextPos : 
-                                                list.position + 1;                    
-                            list.save();
-                        }                    
-                    });
-                }
-            );
+            // Save the new board.lists
+            await Board.update({
+                _id: new mongoose.Types.ObjectId(args.boardId)
+            }, { $set: { lists }}, (err) => {
+                if(err) throw err;
+            });
 
             return true;
         },
         createTask: async (parent, args) => {
-            let position = await Task.count({ listId: args.listId });
-            args.position = position + 1;   
+            // Create task
             const task = await new Task({
                 _id: new mongoose.Types.ObjectId(),
                 ...args
             }).save();
 
+            // Update list.tasks array with new task's id
+            await List.findOneAndUpdate({
+                _id: mongoose.Types.ObjectId(args.listId)
+            }, {
+                $push: { tasks: task._id }
+            }, (err) => {
+                if(err) throw err;
+            });
+
             return task;
         },
-        orderTasks: async(parent, args) => {
-            const tasks = await Task.find({_id: { 
-                "$in": [args.taskId1, args.taskId2]
-            }}).select({ "_id": 1, "position": 1});
+        orderTasks: async (parent, args) => {
+            const listTasks = await List.find({ 
+                _id: new mongoose.Types.ObjectId(args.listId)
+            }, {tasks: 1, _id: 0} );
 
-            console.log(tasks);
-            await Task.findOneAndUpdate({
-                _id: new mongoose.Types.ObjectId(tasks[0]._id)
-            }, {
-                "$set": { "position" : tasks[1].position }
-            }, (err) => {
-                if(err) throw err;
-            });
+            let tasks = listTasks[0].tasks;
+            let item = tasks.splice(--args.position, 1);
+            tasks.splice(--args.nextPosition, 0, ...item);
 
-            await Task.findOneAndUpdate({
-                _id: new mongoose.Types.ObjectId(tasks[1]._id)
-            }, {
-                "$set": { "position" : tasks[0].position }
-            }, (err) => {
+            await List.update({ 
+                _id: new mongoose.Types.ObjectId(args.listId)
+            }, { $set: { tasks } }, (err) => {
                 if(err) throw err;
-            });
+            })
 
             return true;
         },
@@ -163,6 +170,14 @@ export default {
         },
         deleteTask: async(parent, args) => {
             const task = await Task.findById(args.id);
+            // update list.tasks - remove id of the list.tasks array
+            await List.update({
+                _id: new mongoose.Types.ObjectId(task.listId)
+            }, { $pullAll: { tasks: [task._id] } }, (err) => {
+                if(err) throw err;
+            });
+
+            // remove task
             await Task.remove({_id: new mongoose.Types.ObjectId(args.id)});
             return task;
         }

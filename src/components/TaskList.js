@@ -61,12 +61,13 @@ class TaskList extends PureComponent {
                         <div>{title}</div>
                         <div style={styles.listHeader.buttons}>
                             <FlatButton label="Add" onClick={this.toggleNewTask}/>                            
-                            Move: 
-                            <SelectBox 
-                                options={[...Array(count).keys()].map(i => i + 1)} 
-                                onChange={this.onMove} 
-                                selectedValue={position}
-                                />
+                            <label style={styles.move}>
+                                Move: 
+                                <SelectBox 
+                                    options={[...Array(count).keys()].map(i => i + 1)} 
+                                    onChange={this.onMove} 
+                                    selectedValue={position} />
+                            </label>
                             <FlatButton label="Remove" data-id={id} secondary={true} onClick={this.onRemove} />
                         </div>
                     </Subheader>
@@ -108,24 +109,24 @@ class TaskCard extends PureComponent {
         const { title, description, count, position, createdAt, updatedAt } = this.props;
         return(
             <div>
-                {`${this.props.id} - ${this.props.listId}`} 
                 <ListItem 
                     primaryText={
                         <div style={styles.listHeader}>
                             <div>{title}</div>
                             <div style={styles.listHeader.buttons}>                                
-                                Move: 
-                                <SelectBox 
-                                    options={[...Array(count).keys()].map(i => i + 1)} 
-                                    onChange={this.onMove} 
-                                    selectedValue={position}
-                                    />
+                                <label style={styles.move}>
+                                    Move: 
+                                    <SelectBox 
+                                        options={[...Array(count).keys()].map(i => i + 1)} 
+                                        onChange={this.onMove} 
+                                        selectedValue={position}/>
+                                </label>
                                 <FlatButton label="Remove" data-id={this.props.id} secondary={true} onClick={this.onRemove}/>
                             </div>
                         </div>
                     }
                     secondaryText={
-                        <p>{description} <br/><strong>{updatedAt}</strong></p>
+                        <p>{description} <br/> Updated: <strong>{new Date(updatedAt).toLocaleString()}</strong></p>
                     }
                     secondaryTextLines={2} />
             </div>
@@ -160,5 +161,8 @@ const styles = {
     },
     fields: {
         margin: '5px 10px'
+    },
+    move: {
+        margin: '10px'
     }
 }

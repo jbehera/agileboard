@@ -37,11 +37,14 @@ export default (state = {
       case 'CREATE_TASK':
         let { listId, newTask } = action.payload;
 
-        let updatedListsWithNewTask = [...state.board.lists].reduce((acc, next) => {
-            if(next._id == listId) {
-                (next.tasks || []).push(newTask);
+        let updatedListsWithNewTask = [...state.board.lists].reduce((acc, next, i) => {
+            if(next._id == listId) {                
+                let item = Object.assign({}, next);
+                item.tasks = next.tasks ? [...next.tasks, newTask] : [newTask];
+                acc.push(item);
+            } else {
+              acc.push(next);
             }
-            acc.push(next);
             return acc;
         }, []);
 
@@ -55,9 +58,12 @@ export default (state = {
 
         let updatedListsWithRemovedTask = [...state.board.lists].reduce((acc, next) => {
             if(next._id == listId) {
-                next.tasks = next.tasks.filter(task => task._id == deletedTask._id);
+                let item = Object.assign({}, next);
+                item.tasks = next.tasks.filter(task => task._id !== deletedTask._id);
+                acc.push(item);
+            } else {
+              acc.push(next);
             }
-            acc.push(next);
             return acc;
         }, []);
 
@@ -70,17 +76,21 @@ export default (state = {
         position = action.payload.position;
         nextPosition = action.payload.nextPosition;
         listId = action.payload.listId;
-        data = action.payload.response.data; 
+        data = action.payload.data; 
         if(data) {
           let list = state.board.lists.find(list => list._id == listId);
           if(list && list.tasks && list.tasks.length) {
-            let orderedTasks = orderItemsInArray(position, nextPosition, list.tasks);
+            let orderedTasks = orderItemsInArray(position, nextPosition, [...list.tasks]);
 
             let listsWithOrderedTasks = [...state.board.lists].reduce((acc, next) => {
               if(next._id == listId) {
-                next.tasks = orderedTasks;
+                //next.tasks = orderedTasks;
+                let item = Object.assign({}, next);
+                item.tasks = orderedTasks;
+                acc.push(item);
+              } else {
+                acc.push(next);
               }
-              acc.push(next);
               return acc;
             }, []); 
             

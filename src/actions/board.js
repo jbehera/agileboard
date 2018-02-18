@@ -74,6 +74,7 @@ export const deleteList = (id) => {
                     deleteList(id: $id) {
                         _id
                         title
+                        boardId
                     }
                 }
             `,
@@ -130,6 +131,7 @@ export const createTask = (title, description, listId) => {
 };
 
 export const deleteTask = (id, listId) => {
+    console.log('action - deleteTask: ', id, listId);
     return dispatch => {
         client.mutate({
             mutation: gql `
@@ -155,9 +157,9 @@ export const deleteTask = (id, listId) => {
 
 export const orderTasks = (position, nextPosition, listId) => {
     return dispatch => {
-        client.mutation({
+        client.mutate({
             mutation: gql `
-                mutation ($position: Int!, nextPosition: Int!, $listId: String!) {
+                mutation ($position: Int!, $nextPosition: Int!, $listId: String!) {
                     orderTasks(position: $position, nextPosition: $nextPosition, listId: $listId) 
                 }            
             `,
@@ -166,7 +168,7 @@ export const orderTasks = (position, nextPosition, listId) => {
         }).then(response => {
             return dispatch({
                 type: 'ORDER_TASKS',
-                payload: { position, nextPosition, listId, data: { response } }
+                payload: { position, nextPosition, listId, data: response.data }
             })
         })
     }

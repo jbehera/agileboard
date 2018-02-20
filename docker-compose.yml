@@ -1,0 +1,20 @@
+version: '3.5' # specify docker-compo version
+
+# Define the services/containers to be run
+services:
+  client: # name of the first service
+    build: ui # Specify the directory of the Dockerfile
+    ports:
+      - "3000:3000" # Speicfy port mapping
+
+  api: # name of the second service
+      build: service # Specify the directory of the Dockerfile
+      ports:
+        - "4000:4000" # Specify the port mapping
+      links:
+        - database # link this service to the database service
+  
+  database: # name of the third service
+    image: mongo # Specify image to build container from
+    ports:
+      - "27017:27017" # Specify port forwarding

@@ -18,7 +18,7 @@ class SelectBox extends PureComponent {
     }
 
     render() {
-        const { options, selectedValue, onChange } = this.props;
+        const { options, selectedValue } = this.props;
         return (
             <select onChange={this.onChange} onFocus={this.onClick} value={selectedValue}>
                 {options.map((option, i) => (<option 
@@ -26,7 +26,7 @@ class SelectBox extends PureComponent {
                     value={option}>
                     {option}
                 </option>))}
-            </select>            
+            </select>
         )
     }
 }

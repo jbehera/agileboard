@@ -3,8 +3,8 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import { graphiqlExpress, graphqlExpress } from 'apollo-server-express';
 import { makeExecutableSchema } from 'graphql-tools';
-import typeDefs from './server/graphql/schema';
-import resolvers from './server/graphql/resolvers';
+import typeDefs from './graphql/schema';
+import resolvers from './graphql/resolvers';
 import mongoose from 'mongoose';
 
 const schema = makeExecutableSchema({
@@ -12,7 +12,7 @@ const schema = makeExecutableSchema({
 	resolvers
 });
 
-const PORT = 4000;
+const PORT = process.env.port || 4000;
 
 const app = express();
 
